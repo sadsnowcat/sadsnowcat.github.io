@@ -164,7 +164,7 @@
   --redefine-box-shadow-flat-hover: var(--shadow-color-2) 0px 1px 4px 0px, var(--shadow-color-1) 0px 0px 0px 1px, var(--shadow-color-1) 0px 0px 0px 1px inset;
   --mermaid-theme: $mermaid-theme;
 }
-.light-mode {
+.light {
   --background-color: #fff;
   --background-color-transparent: rgba(255,255,255,0.6);
   --background-color-transparent-15: rgba(255,255,255,0.15);
@@ -211,7 +211,7 @@
   --redefine-box-shadow-flat-hover: var(--shadow-color-2) 0px 1px 4px 0px, var(--shadow-color-1) 0px 0px 0px 1px, var(--shadow-color-1) 0px 0px 0px 1px inset;
   --mermaid-theme: $mermaid-theme;
 }
-.dark-mode {
+.dark {
   --background-color: #202124;
   --background-color-transparent: rgba(32,33,36,0.4);
   --background-color-transparent-15: rgba(32,33,36,0.15);
@@ -2043,13 +2043,6 @@ pre .deletion {
 }
 .navbar-drawer-show {
   overflow: hidden;
-}
-[data-target] {
-  display: block; /* or flex, depending on your layout */
-  overflow: hidden;
-}
-[data-target] .submenu-item {
-  opacity: 0;
 }
 .icon-rotated {
   transform: rotate(90deg);
