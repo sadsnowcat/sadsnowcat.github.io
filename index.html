@@ -596,11 +596,8 @@
                         
                             
                             MoeCTF2025的PWN个人向题解，笔者根据难易适当进行了排序，欢迎大家参考交流。
-str_check
-相信你已经在指北中了解到c风格字符串以’\0’结尾的特点。学习各种字符串操作对’\0’的处理，你才能完美地利用程序中的漏洞。
-
-使用\x00截断字符串，字符串前4是moew，ret2textljust原数据靠左 ，rjust原数据靠右，都用来填充字节。
-12345678910from ...
+EZtext简单的ret2text，覆盖buf、rbp，栈对齐，后门函数
+1234567891011from pwn import *context(os=&#x27;linux&#x27;,arch=&#x27;amd64&#x27;,log_level=&#x27;debug&#x27;)# p = ...
                         
                     </div>
 
