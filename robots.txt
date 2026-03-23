@@ -1,5 +1,50 @@
 User-agent: Baiduspider
 Disallow: /
 
+User-agent: Baiduspider-image
+Disallow: /
+
+User-agent: Baiduspider-video
+Disallow: /
+
+User-agent: 360Spider
+Disallow: /
+
+User-agent: 360Spider-Image
+Disallow: /
+
+User-agent: SogouSpider
+Disallow: /
+
+User-agent: SogouNews
+Disallow: /
+
+User-agent: Yisouspider
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: ToutiaoSpider
+Disallow: /
+
+User-agent: Bingbot
+Disallow: /
+
+User-agent: Googlebot
+Disallow: /
+
+User-agent: Googlebot-Image
+Disallow: /
+
+User-agent: Applebot
+Disallow: /
+
+User-agent: DuckDuckBot
+Disallow: /
+
+User-agent: Slurp
+Disallow: /
+
 User-agent: *
 Disallow: /
