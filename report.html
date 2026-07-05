@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多波束海底测线设计与算法实现 | 数学建模综合实践</title>
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<style>
+  :root {
+    --ocean-deep: #0c447c;
+    --ocean: #185fa5;
+    --ocean-light: #378add;
+    --ocean-pale: #e6f1fb;
+    --accent: #d85a30;
+    --accent-light: #faece7;
+    --teal: #0f6e56;
+    --teal-light: #e1f5ee;
+    --amber: #854f0b;
+    --amber-light: #faeeda;
+    --text: #1a1a1a;
+    --text-2: #475569;
+    --text-3: #94a3b8;
+    --border: #e2e8f0;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --code-bg: #f1f5f9;
+    --code-text: #334155;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: "Microsoft YaHei","PingFang SC","Helvetica Neue",Arial,sans-serif;
+    line-height: 1.8;
+    color: var(--text);
+    background: var(--bg);
+  }
+
+  /* ---- 侧边导航 ---- */
+  .nav {
+    position: fixed; top:0; left:0; width:220px; height:100vh;
+    background: var(--ocean-deep); color: #cbd5e1;
+    padding: 24px 0; overflow-y: auto; z-index: 100;
+  }
+  .nav-title { font-size:15px; font-weight:700; color:#fff; padding:0 24px 20px; border-bottom:1px solid rgba(255,255,255,0.1); }
+  .nav a {
+    display:block; padding:10px 24px; color:#94a3b8; text-decoration:none;
+    font-size:13px; transition: all 0.2s; border-left:3px solid transparent;
+  }
+  .nav a:hover { color:#fff; background:rgba(255,255,255,0.05); border-left-color:var(--ocean-light); }
+  .nav a.active { color:#fff; background:rgba(55,138,221,0.15); border-left-color:var(--ocean-light); }
+
+  /* ---- 主内容 ---- */
+  .main { margin-left:220px; padding:40px 0 80px; display:flex; justify-content:center; }
+  .main-inner { max-width:960px; width:100%; padding:0 48px; }
+
+  /* ---- 封面 ---- */
+  .cover {
+    background: linear-gradient(135deg, var(--ocean-deep), var(--ocean));
+    color:#fff; border-radius:16px; padding:48px 40px; margin-bottom:40px;
+    box-shadow: 0 4px 20px rgba(12,68,124,0.25);
+  }
+  .cover h1 { font-size:28px; font-weight:700; margin-bottom:8px; }
+  .cover .subtitle { font-size:15px; opacity:0.85; margin-bottom:24px; }
+  .cover .meta { display:flex; gap:32px; font-size:13px; opacity:0.8; }
+  .cover .meta span { display:flex; align-items:center; gap:6px; }
+
+  /* ---- 章节 ---- */
+  .section { margin-bottom:48px; scroll-margin-top:20px; }
+  .section-title {
+    font-size:22px; font-weight:700; color:var(--ocean-deep);
+    padding-bottom:10px; border-bottom:2px solid var(--ocean-pale);
+    margin-bottom:24px; display:flex; align-items:center; gap:10px;
+  }
+  .section-title .num {
+    display:inline-flex; width:32px; height:32px; border-radius:8px;
+    background:var(--ocean); color:#fff; font-size:16px; align-items:center;
+    justify-content:center; font-weight:700;
+  }
+  .subsection { font-size:17px; font-weight:600; color:var(--text); margin:28px 0 14px; }
+
+  /* ---- 卡片 ---- */
+  .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); margin-bottom:20px; }
+  .card.highlight { border-left:4px solid var(--ocean-light); }
+  .card.warn { border-left:4px solid var(--accent); background:var(--accent-light); }
+  .card.success { border-left:4px solid var(--teal); background:var(--teal-light); }
+
+  /* ---- 段落 ---- */
+  p { margin-bottom:12px; font-size:14px; }
+  .note { font-size:13px; color:var(--text-2); font-style:italic; }
+
+  /* ---- 公式 ---- */
+  .formula-box { background:var(--ocean-pale); border-radius:8px; padding:16px 20px; margin:14px 0; border-left:3px solid var(--ocean-light); }
+  .formula-box .label { font-size:12px; color:var(--ocean); font-weight:600; margin-bottom:6px; }
+
+  /* ---- 代码 ---- */
+  pre { background:var(--code-bg); border:1px solid var(--border); border-radius:8px; padding:16px 20px; overflow-x:auto; margin:14px 0; font-size:13px; line-height:1.6; }
+  code { font-family:"Cascadia Code","Fira Code","Consolas",monospace; color:var(--code-text); }
+  pre code { background:none; padding:0; }
+  .code-inline { background:var(--code-bg); padding:2px 6px; border-radius:4px; font-size:13px; }
+
+  /* ---- 表格 ---- */
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13px; }
+  th { background:var(--ocean); color:#fff; padding:10px 12px; text-align:left; font-weight:600; white-space:nowrap; }
+  td { padding:8px 12px; border-bottom:1px solid var(--border); }
+  tr:nth-child(even) td { background:var(--ocean-pale); }
+  tr:hover td { background:var(--amber-light); }
+  td.bad { color:var(--accent); font-weight:600; }
+  td.good { color:var(--teal); font-weight:600; }
+
+  /* ---- 图片 ---- */
+  .figure { text-align:center; margin:24px 0; }
+  .figure img { max-width:100%; border-radius:8px; box-shadow:var(--shadow); border:1px solid var(--border); }
+  .figure .caption { font-size:13px; color:var(--text-2); margin-top:8px; }
+
+  /* ---- SVG ---- */
+  .svg-container { text-align:center; margin:24px 0; }
+  .svg-container svg { max-width:100%; }
+
+  /* ---- 标签 ---- */
+  .tag { display:inline-block; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:600; margin:0 4px; }
+  .tag-blue { background:var(--ocean-pale); color:var(--ocean); }
+  .tag-orange { background:var(--accent-light); color:var(--accent); }
+  .tag-green { background:var(--teal-light); color:var(--teal); }
+  .tag-amber { background:var(--amber-light); color:var(--amber); }
+
+  /* ---- 时间线 ---- */
+  .timeline { position:relative; padding-left:28px; }
+  .timeline::before { content:''; position:absolute; left:8px; top:8px; bottom:8px; width:2px; background:var(--border); }
+  .timeline-item { position:relative; margin-bottom:20px; }
+  .timeline-item::before { content:''; position:absolute; left:-24px; top:6px; width:12px; height:12px; border-radius:50%; background:var(--ocean-light); border:2px solid #fff; box-shadow:0 0 0 2px var(--ocean-light); }
+  .timeline-item .time { font-size:12px; color:var(--text-3); }
+  .timeline-item .content { font-size:14px; }
+
+  /* ---- 对比框 ---- */
+  .compare { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:16px 0; }
+  .compare > div { padding:16px; border-radius:8px; }
+  .compare .left { background:var(--ocean-pale); border:1px solid var(--ocean-light); }
+  .compare .right { background:var(--accent-light); border:1px solid var(--accent); }
+  .compare h4 { font-size:14px; margin-bottom:8px; }
+
+  /* ---- 高亮 ---- */
+  .highlight { background:#fff3cd; padding:1px 4px; border-radius:3px; }
+  .math-block { overflow-x:auto; padding:8px 0; }
+
+  /* ---- 响应式 ---- */
+  @media (max-width:768px) {
+    .nav { display:none; }
+    .main { margin-left:0; padding:20px; display:block; }
+    .main-inner { padding:0; }
+    .cover { padding:32px 20px; }
+    .compare { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 侧边导航 ============ -->
+<nav class="nav">
+  <div class="nav-title">多波束海底测线设计</div>
+  <a href="#cover" class="active">封面</a>
+  <a href="#bg">一、问题背景</a>
+  <a href="#model">二、模型建立与公式推导</a>
+  <a href="#algo">三、核心算法设计</a>
+  <a href="#result">四、数值结果与可视化</a>
+  <a href="#error">五、误差机理探讨</a>
+  <a href="#ai">六、AI辅助建模纠偏记录</a>
+  <a href="#summary">七、总结</a>
+</nav>
+
+<!-- ============ 主内容 ============ -->
+<div class="main">
+<div class="main-inner">
+
+<!-- ---- 封面 ---- -->
+<section class="cover" id="cover">
+  <h1>多波束海底测线设计与算法实现</h1>
+  <p class="subtitle">数学建模综合实践课程 · 课题 1</p>
+  <div class="meta">
+    <span>工具：C++ / Python matplotlib</span>
+    <span>日期：2026 年 7 月</span>
+  </div>
+</section>
+
+<!-- ============ 一、问题背景 ============ -->
+<section class="section" id="bg">
+  <h2 class="section-title"><span class="num">1</span>问题背景</h2>
+  <div class="card">
+    <p>多波束测深系统（MBES）是现代海洋测绘的核心设备。换能器以一定开角向海底发射扇形声波束，一次性获取一条带状区域的水深数据。由于海底存在坡度，水深沿坡度方向变化，导致不同位置处单条测线的覆盖宽度不同。</p>
+    <p>本课题要求在给定海域内设计平行测线方案，满足<strong>完全无死角覆盖</strong>且<strong>相邻重叠率在 10%~20%</strong> 的约束下，使<strong>总测线长度最短</strong>。具体分两个任务：</p>
+    <table>
+      <tr><th>任务</th><th>参数</th><th>要求</th></tr>
+      <tr><td>任务 1：单线剖面分析</td><td>$D_0=70$m，$\alpha=1.5°$，开角 120°</td><td>计算 9 个等间距位置的水深、覆盖宽度、重叠率</td></tr>
+      <tr><td>任务 2：全域最优规划</td><td>$D_0=120$m，$\alpha=1.5°$，测区 2×4 海里</td><td>贪心搜索最优测线布局，总长最短</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ============ 二、模型建立与公式推导 ============ -->
+<section class="section" id="model">
+  <h2 class="section-title"><span class="num">2</span>模型建立与公式推导</h2>
+
+  <h3 class="subsection">2.1 坐标系建立</h3>
+  <div class="card">
+    <p>以海平面待测海域中心点为原点 $(0,0)$：</p>
+    <ul style="margin-left:20px; margin-bottom:12px;">
+      <li><strong>x 轴</strong>：水平方向，正方向指向水变浅的方向（沿坡度方向）</li>
+      <li><strong>y 轴</strong>：竖直向下，表示水深</li>
+    </ul>
+    <p>海底为平坦斜坡，坡度 $\alpha$，在 $x=0$ 处水深为 $D_0$。海底斜面方程为：</p>
+    <div class="formula-box">
+      <div class="label">海底斜面方程</div>
+      $$y = D_0 - x \tan\alpha$$
+    </div>
+    <p>测量船沿<strong>等深线方向</strong>（与坡度方向正交）匀速直线航行，每条测线对应的 $x$ 坐标固定，覆盖宽度仅由该处水深决定。</p>
+  </div>
+
+  <h3 class="subsection">2.2 二维几何剖面示意图</h3>
+  <div class="card">
+    <p>下图展示了测量船在位置 $x$ 处发射多波束的几何关系。换能器开角 120°，半开角 $\theta=60°$，左舷波束偏向深水侧，右舷波束偏向浅水侧，两条边缘波束与海底斜面的交点即为覆盖区域的左右边界。</p>
+    <div class="svg-container">
+<svg viewBox="0 0 720 400" width="100%" style="font-family:'Microsoft YaHei',sans-serif;">
+  <!-- 海面 -->
+  <rect x="0" y="0" width="720" height="110" fill="#e6f1fb" opacity="0.3"/>
+  <line x1="0" y1="110" x2="720" y2="110" stroke="#378add" stroke-width="1.5"/>
+  <text x="650" y="30" font-size="13" fill="#185fa5">海平面</text>
+
+  <!-- 海底斜面 -->
+  <line x1="20" y1="300" x2="700" y2="180" stroke="#534AB7" stroke-width="2"/>
+  <polygon points="20,300 700,180 700,380 20,380" fill="#CECBF6" opacity="0.2"/>
+  <text x="580" y="200" font-size="12" fill="#534AB7">海底斜面 (坡度 α)</text>
+
+  <!-- 船位 -->
+  <circle cx="360" cy="110" r="5" fill="#d85a30"/>
+  <line x1="360" y1="80" x2="360" y2="110" stroke="#d85a30" stroke-width="1.5"/>
+  <text x="355" y="75" font-size="12" fill="#d85a30" text-anchor="middle">测量船</text>
+
+  <!-- 中心波束（竖直向下） -->
+  <line x1="360" y1="110" x2="360" y2="240" stroke="#888" stroke-width="1" stroke-dasharray="4 3"/>
+
+  <!-- 左波束 -->
+  <line x1="360" y1="110" x2="180" y2="287" stroke="#185fa5" stroke-width="1.5"/>
+  <!-- 右波束 -->
+  <line x1="360" y1="110" x2="540" y2="193" stroke="#d85a30" stroke-width="1.5"/>
+
+  <!-- 左落点 -->
+  <circle cx="180" cy="287" r="4" fill="#185fa5"/>
+  <text x="130" y="305" font-size="12" fill="#185fa5">X_L (左落点)</text>
+  <!-- 右落点 -->
+  <circle cx="540" cy="193" r="4" fill="#d85a30"/>
+  <text x="500" y="180" font-size="12" fill="#d85a30">X_R (右落点)</text>
+
+  <!-- 半开角标注 -->
+  <path d="M 360 150 A 40 40 0 0 0 343 147" fill="none" stroke="#888" stroke-width="0.8"/>
+  <text x="325" y="160" font-size="11" fill="#888">θ</text>
+  <path d="M 360 150 A 40 40 0 0 1 377 147" fill="none" stroke="#888" stroke-width="0.8"/>
+  <text x="375" y="160" font-size="11" fill="#888">θ</text>
+
+  <!-- 水深标注 -->
+  <line x1="360" y1="110" x2="360" y2="240" stroke="#888" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="370" y="180" font-size="12" fill="#444">D(x)</text>
+
+  <!-- 覆盖宽度标注 -->
+  <line x1="180" y1="350" x2="540" y2="350" stroke="#0f6e56" stroke-width="1.5"/>
+  <line x1="180" y1="345" x2="180" y2="355" stroke="#0f6e56" stroke-width="1"/>
+  <line x1="540" y1="345" x2="540" y2="355" stroke="#0f6e56" stroke-width="1"/>
+  <text x="330" y="370" font-size="12" fill="#0f6e56">W (覆盖宽度)</text>
+
+  <!-- x轴标注 -->
+  <line x1="360" y1="105" x2="360" y2="120" stroke="#888" stroke-width="0.5"/>
+  <text x="355" y="125" font-size="11" fill="#888" text-anchor="middle">x</text>
+
+  <!-- 坡度方向 -->
+  <text x="50" y="270" font-size="11" fill="#534AB7">深水侧 ←</text>
+  <text x="600" y="170" font-size="11" fill="#534AB7">→ 浅水侧</text>
+</svg>
+    </div>
+    <p class="note">图 1：多波束测深二维几何剖面示意。船在位置 $x$ 处，水深 $D(x)$，左右波束分别以半开角 $\theta$ 偏离竖直方向，在海底斜面上的落点 $X_L$、$X_R$ 确定了覆盖宽度 $W$。</p>
+  </div>
+
+  <h3 class="subsection">2.3 动态水深函数</h3>
+  <div class="card">
+    <p>测量船位于横坐标 $x$ 处时，其正下方海水深度为：</p>
+    <div class="formula-box">
+      <div class="label">动态水深</div>
+      $$D(x) = D_0 - x \tan\alpha$$
+    </div>
+    <p>$x>0$（浅水方向）：$D(x)<D_0$，水深变浅；$x<0$（深水方向）：$D(x)>D_0$，水深变深。</p>
+  </div>
+
+  <h3 class="subsection">2.4 波束落点边界方程推导</h3>
+  <div class="card highlight">
+    <p>记 $t = \tan\theta$，$a = \tan\alpha$。换能器开角 120°，半开角 $\theta=60°$。</p>
+
+    <p style="margin-top:16px;"><strong>左落点（深水侧边界）：</strong>左波束射线从 $(x,0)$ 出发，方向为左下偏 $\theta$ 角，参数方程为 $X = x - s\sin\theta$，$Y = s\cos\theta$。消去参数得射线方程：</p>
+    <div class="math-block">$$Y = \frac{x - X}{\tan\theta} = \frac{x - X}{t}$$</div>
+    <p>与海底面 $Y = D_0 - Xa$ 联立求解：</p>
+    <div class="math-block">$$\frac{x - X}{t} = D_0 - Xa \implies x - tD_0 = X(1 - at)$$</div>
+    <div class="formula-box">
+      <div class="label">左落点</div>
+      $$\boxed{X_L = \frac{x - D_0 \tan\theta}{1 - \tan\alpha \tan\theta} = x - \frac{D(x)\tan\theta}{1 - \tan\alpha \tan\theta}}$$
+    </div>
+
+    <p style="margin-top:16px;"><strong>右落点（浅水侧边界）：</strong>右波束射线从 $(x,0)$ 出发，方向为右下偏 $\theta$ 角。同理推导得：</p>
+    <div class="formula-box">
+      <div class="label">右落点</div>
+      $$\boxed{X_R = \frac{x + D_0 \tan\theta}{1 + \tan\alpha \tan\theta} = x + \frac{D(x)\tan\theta}{1 + \tan\alpha \tan\theta}}$$
+    </div>
+  </div>
+
+  <h3 class="subsection">2.5 覆盖宽度公式</h3>
+  <div class="card">
+    <p>两落点沿斜面的距离即为覆盖宽度 $W$。两落点均在斜面上，水平跨度为 $X_R - X_L$，沿倾角 $\alpha$ 的斜面距离需除以 $\cos\alpha$：</p>
+    <div class="math-block">$$X_R - X_L = \frac{2D(x)\tan\theta}{1 - \tan^2\alpha \tan^2\theta}$$</div>
+    <div class="formula-box">
+      <div class="label">覆盖宽度</div>
+      $$\boxed{W(x) = \frac{2D(x)\tan\theta}{\cos\alpha\,(1 - \tan^2\alpha\,\tan^2\theta)}}$$
+    </div>
+    <p><strong>验证</strong>：当 $\alpha=0$（平坦海底），$W = 2D\tan\theta = 2\sqrt{3}\,D$，与几何直觉一致。</p>
+  </div>
+
+  <h3 class="subsection">2.6 重叠率定义</h3>
+  <div class="card">
+    <p>设第 $i$ 条测线位于 $x_i$，覆盖范围 $[X_L^{(i)}, X_R^{(i)}]$，第 $i+1$ 条位于 $x_{i+1} > x_i$（向浅水方向）。重叠区域宽度为 $\Delta = X_R^{(i)} - X_L^{(i+1)}$。定义重叠率为重叠宽度占<strong>后一条（较窄）测线覆盖宽度</strong>的比例：</p>
+    <div class="formula-box">
+      <div class="label">重叠率</div>
+      $$\boxed{\eta = \frac{X_R^{(i)} - X_L^{(i+1)}}{W_{i+1}} \times 100\%}$$
+    </div>
+    <p>从深水驶向浅水时，$W_{i+1} < W_i$，以较窄条带为分母更保守，有利于保障覆盖质量。</p>
+  </div>
+</section>
+
+<!-- ============ 三、核心算法设计 ============ -->
+<section class="section" id="algo">
+  <h2 class="section-title"><span class="num">3</span>核心算法设计</h2>
+
+  <h3 class="subsection">3.1 贪心策略</h3>
+  <div class="card highlight">
+    <p><strong>核心思想</strong>：每条测线在满足 10% 重叠率约束的前提下，尽可能远离前一条（间距最大化），从而最小化测线条数和总长度。</p>
+    <div class="compare">
+      <div class="left">
+        <h4>贪心策略</h4>
+        <p style="font-size:13px;">每次卡重叠率下限 10%，间距最大 → 条数最少 → 总长最短</p>
+      </div>
+      <div class="right">
+        <h4>保守策略</h4>
+        <p style="font-size:13px;">卡重叠率上限 20%，间距小 → 条数多 → 总长长但冗余大</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="subsection">3.2 算法伪代码</h3>
+  <div class="card">
+<pre><code>function PlanSurveyLines(x_min, x_max, target_eta):
+    lines = []
+
+    // Step 1: 第一条测线置于深水侧
+    // 令其左边界 = 测区深水边界 x_min, 反解 x1
+    x1 = solve X_L(x) = x_min  for x
+    lines.append(SurveyLine(x1))
+
+    // Step 2: 贪心递推
+    while last_line.xRight < x_max:
+        prev = lines.last()
+        x_next = BinarySearch(prev.x, target_eta)
+        lines.append(SurveyLine(x_next))
+
+    return lines
+
+function BinarySearch(prev_x, target):
+    lo = prev_x                         // 重叠率最大 (~1)
+    hi = X_R(prev_x) + W(prev_x) + 1000 // 重叠率为负 (盲区)
+    repeat 80 times:
+        mid = (lo + hi) / 2
+        eta = overlapRate(prev_x, mid)
+        if eta > target:
+            lo = mid    // 重叠偏多 → 下一条往后移
+        else:
+            hi = mid    // 重叠偏少 → 下一条往前移
+    return (lo + hi) / 2</code></pre>
+  </div>
+
+  <h3 class="subsection">3.3 二分查找原理</h3>
+  <div class="card">
+    <p>关键观察：重叠率 $\eta$ 关于下一条测线位置 $x_{\text{next}}$ <strong>单调递减</strong>——$x_{\text{next}}$ 越大，两条线离得越远，重叠越小。</p>
+    <div class="svg-container">
+<svg viewBox="0 0 680 260" width="100%" style="font-family:'Microsoft YaHei',sans-serif;">
+  <!-- 坐标轴 -->
+  <line x1="60" y1="220" x2="620" y2="220" stroke="#888" stroke-width="0.8"/>
+  <line x1="60" y1="40" x2="60" y2="220" stroke="#888" stroke-width="0.8"/>
+  <text x="625" y="225" font-size="11" fill="#888">x_next</text>
+  <text x="50" y="35" font-size="11" fill="#888" text-anchor="end">η</text>
+
+  <!-- 10% 目标线 -->
+  <line x1="60" y1="180" x2="620" y2="180" stroke="#d85a30" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="55" y="184" font-size="11" fill="#d85a30" text-anchor="end">10%</text>
+
+  <!-- 单调递减曲线 -->
+  <path d="M70 50 Q200 55 350 180 Q450 210 590 225" fill="none" stroke="#185fa5" stroke-width="2"/>
+
+  <!-- lo 标记 -->
+  <line x1="100" y1="40" x2="100" y2="220" stroke="#378add" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="100" y="235" font-size="10" fill="#378add" text-anchor="middle">lo (η≈1)</text>
+
+  <!-- hi 标记 -->
+  <line x1="560" y1="40" x2="560" y2="220" stroke="#854f0b" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="560" y="235" font-size="10" fill="#854f0b" text-anchor="middle">hi (η&lt;0)</text>
+
+  <!-- 解 -->
+  <circle cx="350" cy="180" r="5" fill="#d85a30"/>
+  <line x1="350" y1="40" x2="350" y2="220" stroke="#d85a30" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="350" y="235" font-size="10" fill="#d85a30" text-anchor="middle">解: η=10%</text>
+
+  <!-- 标注 -->
+  <text x="130" y="65" font-size="11" fill="#185fa5">η 单调递减</text>
+  <text x="400" y="200" font-size="11" fill="#0f6e56">二分收敛</text>
+</svg>
+    </div>
+    <p class="note">图 2：重叠率 η 关于 x_next 的单调递减关系。lo 端 η≈1（完全重叠），hi 端 η<0（盲区），中间唯一解 η=10%。</p>
+  </div>
+
+  <h3 class="subsection">3.4 C++ 核心实现</h3>
+  <div class="card">
+    <p><strong>几何计算头文件 <code class="code-inline">geometry.h</code>：</strong>封装水深、边界、覆盖宽度、重叠率公式。</p>
+<pre><code>// 动态水深: 船在 x 处正下方水深
+inline double depth(double x, const GeoParams& p) {
+    return p.D0 - x * std::tan(p.alpha);
+}
+
+// 左落点 (深水侧边界)
+inline double leftBound(double x, const GeoParams& p) {
+    double d = depth(x, p), ta = std::tan(p.alpha), tt = std::tan(p.theta);
+    return x - d * tt / (1.0 - ta * tt);
+}
+
+// 右落点 (浅水侧边界)
+inline double rightBound(double x, const GeoParams& p) {
+    double d = depth(x, p), ta = std::tan(p.alpha), tt = std::tan(p.theta);
+    return x + d * tt / (1.0 + ta * tt);
+}
+
+// 覆盖宽度: 两落点沿斜面距离
+inline double coverWidth(double x, const GeoParams& p) {
+    return (rightBound(x, p) - leftBound(x, p)) / std::cos(p.alpha);
+}
+
+// 相邻重叠率
+inline double overlapRate(double prev_x, double cur_x, const GeoParams& p) {
+    return (rightBound(prev_x, p) - leftBound(cur_x, p)) / coverWidth(cur_x, p);
+}</code></pre>
+
+    <p style="margin-top:16px;"><strong>二分查找核心函数：</strong></p>
+<pre><code>double binarySearchNext(double prev_x, double target, const GeoParams& p) {
+    double lo = prev_x;                              // η 最大
+    double hi = rightBound(prev_x, p)
+              + coverWidth(prev_x, p) + 1000.0;      // η < 0 (盲区)
+
+    for (int i = 0; i < 80; ++i) {    // 80 次二分, 精度 ~1e-24
+        double mid = (lo + hi) * 0.5;
+        double eta = overlapRate(prev_x, mid, p);
+        if (eta > target)
+            lo = mid;     // 重叠偏多 -> 下一条往后移
+        else
+            hi = mid;     // 重叠偏少 -> 下一条往前移
+    }
+    return (lo + hi) * 0.5;
+}</code></pre>
+  </div>
+</section>
+
+<!-- ============ 四、数值结果与可视化 ============ -->
+<section class="section" id="result">
+  <h2 class="section-title"><span class="num">4</span>数值结果与可视化</h2>
+
+  <h3 class="subsection">4.1 任务 1：单线剖面分析</h3>
+  <div class="card">
+    <p>参数：$D_0=70$m，$\alpha=1.5°$，半开角 $\theta=60°$，测线间距 200m，从 $x=-800$m 到 $x=800$m 共 9 个位置。</p>
+    <table>
+      <tr><th>序号</th><th>位置 x(m)</th><th>水深(m)</th><th>左边界(m)</th><th>右边界(m)</th><th>覆盖宽度(m)</th><th>重叠率</th></tr>
+      <tr><td>1</td><td>-800</td><td>90.95</td><td>-965.01</td><td>-649.31</td><td>315.81</td><td>—（首条）</td></tr>
+      <tr><td>2</td><td>-600</td><td>85.71</td><td>-755.51</td><td>-457.98</td><td>297.63</td><td class="good">35.68%</td></tr>
+      <tr><td>3</td><td>-400</td><td>80.47</td><td>-546.01</td><td>-266.66</td><td>279.44</td><td class="good">31.50%</td></tr>
+      <tr><td>4</td><td>-200</td><td>75.24</td><td>-336.51</td><td>-75.34</td><td>261.26</td><td class="good">26.73%</td></tr>
+      <tr><td>5</td><td>0</td><td>70.00</td><td>-127.00</td><td>115.98</td><td>243.07</td><td class="good">21.25%</td></tr>
+      <tr><td>6</td><td>200</td><td>64.76</td><td>82.50</td><td>307.31</td><td>224.88</td><td class="good">14.89%</td></tr>
+      <tr><td>7</td><td>400</td><td>59.53</td><td>292.00</td><td>498.63</td><td>206.70</td><td>7.40%</td></tr>
+      <tr><td>8</td><td>600</td><td>54.29</td><td>501.50</td><td>689.95</td><td>188.51</td><td class="bad">-1.52%（盲区）</td></tr>
+      <tr><td>9</td><td>800</td><td>49.05</td><td>711.00</td><td>881.27</td><td>170.33</td><td class="bad">-12.36%（盲区）</td></tr>
+    </table>
+    <p><strong>关键发现</strong>：固定 200m 间距在深水区重叠率过高（35%），在浅水区（$x \geq 600$m）出现盲区（重叠率为负），说明固定间距无法适应水深变化。</p>
+  </div>
+
+  <div class="card">
+    <div class="figure">
+      <img src="plot/task1_profile.png" alt="任务1剖面覆盖示意图">
+      <div class="caption">图 3：任务 1 单线剖面覆盖示意图——9 条测线在海底斜面上的覆盖范围</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="figure">
+      <img src="plot/task1_curves.png" alt="任务1水深覆盖宽度重叠率变化曲线">
+      <div class="caption">图 4：水深、覆盖宽度、重叠率随测线位置的变化。绿色柱表示在 10%~20% 区间内，红色柱表示超出约束</div>
+    </div>
+  </div>
+
+  <h3 class="subsection">4.2 任务 2：全域最优测线规划</h3>
+  <div class="card">
+    <p>参数：$D_0=120$m，$\alpha=1.5°$，测区 2 海里 × 4 海里（3704m × 7408m），重叠率约束 10%~20%，贪心卡 10% 下限。</p>
+    <table>
+      <tr><th>序号</th><th>位置 x(m)</th><th>水深(m)</th><th>覆盖宽度(m)</th><th>重叠率</th><th>序号</th><th>位置 x(m)</th><th>水深(m)</th><th>覆盖宽度(m)</th><th>重叠率</th></tr>
+      <tr><td>1</td><td>-3328</td><td>207.2</td><td>719.3</td><td>—</td><td>15</td><td>2075</td><td>65.7</td><td>228.0</td><td class="good">10.0%</td></tr>
+      <tr><td>2</td><td>-2705</td><td>190.8</td><td>662.7</td><td class="good">10.0%</td><td>16</td><td>2272</td><td>60.5</td><td>210.1</td><td class="good">10.0%</td></tr>
+      <tr><td>3</td><td>-2131</td><td>175.8</td><td>610.4</td><td class="good">10.0%</td><td>17</td><td>2454</td><td>55.7</td><td>193.5</td><td class="good">10.0%</td></tr>
+      <tr><td>4</td><td>-1602</td><td>161.9</td><td>562.4</td><td class="good">10.0%</td><td>18</td><td>2622</td><td>51.3</td><td>178.3</td><td class="good">10.0%</td></tr>
+      <tr><td>5</td><td>-1115</td><td>149.2</td><td>518.1</td><td class="good">10.0%</td><td>19</td><td>2776</td><td>47.3</td><td>164.2</td><td class="good">10.0%</td></tr>
+      <tr><td>6</td><td>-666</td><td>137.4</td><td>477.2</td><td class="good">10.0%</td><td>20</td><td>2919</td><td>43.6</td><td>151.3</td><td class="good">10.0%</td></tr>
+      <tr><td>7</td><td>-252</td><td>126.6</td><td>439.6</td><td class="good">10.0%</td><td>21</td><td>3050</td><td>40.1</td><td>139.4</td><td class="good">10.0%</td></tr>
+      <tr><td>8</td><td>128</td><td>116.6</td><td>405.0</td><td class="good">10.0%</td><td>22</td><td>3171</td><td>37.0</td><td>128.4</td><td class="good">10.0%</td></tr>
+      <tr><td>9</td><td>479</td><td>107.4</td><td>373.1</td><td class="good">10.0%</td><td>23</td><td>3282</td><td>34.1</td><td>118.3</td><td class="good">10.0%</td></tr>
+      <tr><td>10</td><td>803</td><td>99.0</td><td>343.7</td><td class="good">10.0%</td><td>24</td><td>3384</td><td>31.4</td><td>109.0</td><td class="good">10.0%</td></tr>
+      <tr><td>11</td><td>1100</td><td>91.2</td><td>316.6</td><td class="good">10.0%</td><td>25</td><td>3479</td><td>28.9</td><td>100.4</td><td class="good">10.0%</td></tr>
+      <tr><td>12</td><td>1375</td><td>84.0</td><td>291.7</td><td class="good">10.0%</td><td>26</td><td>3566</td><td>26.6</td><td>92.5</td><td class="good">10.0%</td></tr>
+      <tr><td>13</td><td>1627</td><td>77.4</td><td>268.7</td><td class="good">10.0%</td><td>27</td><td>3646</td><td>24.5</td><td>85.2</td><td class="good">10.0%</td></tr>
+      <tr><td>14</td><td>1860</td><td>71.3</td><td>247.5</td><td class="good">10.0%</td><td>28</td><td>3720</td><td>22.6</td><td>78.5</td><td class="good">10.0%</td></tr>
+    </table>
+    <div class="card success" style="margin-top:16px;">
+      <p style="font-size:15px;"><strong>最终结果：</strong>测线总数 <strong>28 条</strong>，单条长度 3704m，总测线长度 <strong>103,712m（56 海里）</strong>，所有相邻重叠率均精确卡在 10%，全域无死角覆盖。</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="figure">
+      <img src="plot/task2_overview.png" alt="任务2全域测线分布俯视图">
+      <div class="caption">图 5：任务 2 全域最优测线分布俯视图——28 条测线从深水（左）到浅水（右），间距逐渐缩小</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="figure">
+      <img src="plot/task2_width_depth.png" alt="任务2覆盖宽度与水深变化">
+      <div class="caption">图 6：覆盖宽度（蓝）与水深（红）随测线位置的变化——从深水到浅水，水深减小，覆盖宽度同步递减</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="figure">
+      <img src="plot/task2_spacing.png" alt="任务2相邻测线间距分布">
+      <div class="caption">图 7：相邻测线间距分布——深水区间距约 623m，浅水区缩小至 73m，间距递减趋势明显</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 五、误差机理探讨 ============ -->
+<section class="section" id="error">
+  <h2 class="section-title"><span class="num">5</span>误差机理探讨</h2>
+
+  <h3 class="subsection">5.1 真实水深变化模型 vs 平移近似模型</h3>
+  <div class="card">
+    <div class="compare">
+      <div class="left">
+        <h4>真实水深变化模型（本文采用）</h4>
+        <p style="font-size:13px;">$D(x) = D_0 - x\tan\alpha$，水深随 $x$ 动态变化。每条测线的覆盖宽度 $W(x)$ 独立计算，相邻间距根据实际重叠率动态调整。</p>
+        <p style="font-size:13px;"><strong>特点</strong>：精确反映海底坡度影响，浅水区自动加密测线。</p>
+      </div>
+      <div class="right">
+        <h4>平移近似模型（错误做法）</h4>
+        <p style="font-size:13px;">假设覆盖宽度恒定 $W = W_0$，下一条位置简单取 $x_{i+1} = x_i + W_0 \times (1 - \eta)$。相当于"平移"固定间距。</p>
+        <p style="font-size:13px;"><strong>特点</strong>：计算简单，但忽略了水深变化导致的覆盖宽度差异。</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="subsection">5.2 定量误差分析</h3>
+  <div class="card">
+    <p>以任务 2 参数（$D_0=120$m，$\alpha=1.5°$）为例，对比两种模型在深水区和浅水区的差异：</p>
+    <table>
+      <tr><th>位置</th><th>水深 D(m)</th><th>真实 W(m)</th><th>平移 W₀(m)</th><th>宽度误差</th><th>后果</th></tr>
+      <tr><td>深水侧 (x=-3328)</td><td>207.2</td><td>719.3</td><td>415.7 (=2√3·120)</td><td>+73%</td><td>平移模型低估宽度，过度加密</td></tr>
+      <tr><td>中心 (x=0)</td><td>120.0</td><td>415.7</td><td>415.7</td><td>0%</td><td>恰好一致（基准点）</td></tr>
+      <tr><td>浅水侧 (x=3720)</td><td>22.6</td><td>78.5</td><td>415.7</td><td>-429%</td><td class="bad">平移模型严重高估宽度，产生盲区！</td></tr>
+    </table>
+    <p style="margin-top:14px;"><strong>根本原因</strong>：覆盖宽度 $W \propto D(x)$，水深从 207m 降至 23m 时，真实覆盖宽度从 719m 缩小至 79m。平移模型用恒定 $W_0$ 计算间距，在浅水区间距远大于实际覆盖宽度，导致大面积漏测。</p>
+  </div>
+
+  <h3 class="subsection">5.3 浅水区盲区的数学证明</h3>
+  <div class="card highlight">
+    <p>若采用平移模型，测线间距恒定为 $\Delta x = W_0(1 - \eta) = 415.7 \times 0.9 \approx 374$m。但在浅水区（$x=3720$m），真实覆盖宽度仅 78.5m，远小于间距 374m。</p>
+    <p>此时实际重叠率为：</p>
+    <div class="math-block">$$\eta_{\text{实际}} = \frac{W_{\text{浅}} - \Delta x}{W_{\text{浅}}} = \frac{78.5 - 374}{78.5} = -376\%$$</p>
+    <p>负值表示存在巨大的覆盖盲区——相邻测线之间有约 296m 宽的漏测带。</p>
+  </div>
+
+  <h3 class="subsection">5.4 工程后果分析</h3>
+  <div class="card warn">
+    <p>若在浅水区错误使用平移模型，会对实际海洋测绘工程造成以下灾难性后果：</p>
+    <ol style="margin-left:20px; font-size:14px;">
+      <li><strong>海图空白</strong>：浅水区大面积漏测导致海图出现空白区域，未能发现暗礁、浅滩等航行障碍物，直接威胁船舶航行安全。</li>
+      <li><strong>水深低估</strong>：漏测区域的水深数据缺失或由邻近深水数据外推，低估实际浅水深度，可能导致船舶搁浅。</li>
+      <li><strong>返工成本</strong>：发现漏测后需重新部署测量船补测，造成人力、燃料、设备损耗等巨额额外成本。海洋测量船日运营成本可达数万至十数万元。</li>
+      <li><strong>法律责任</strong>：若因海图质量问题导致航行事故，测量单位可能面临法律追责和赔偿义务。</li>
+      <li><strong>数据不可逆</strong>：部分海域水文条件窗口期短，错过补测时机可能导致数据永久缺失，影响后续工程建设（如海底管道、跨海大桥选址）。</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 六、AI辅助建模纠偏记录 ============ -->
+<section class="section" id="ai">
+  <h2 class="section-title"><span class="num">6</span>AI辅助建模纠偏记录（20%）</h2>
+
+  <h3 class="subsection">6.1 AI 工具使用概况</h3>
+  <div class="card">
+    <table>
+      <tr><th>环节</th><th>AI 辅助内容</th><th>人工审查与纠偏</th></tr>
+      <tr>
+        <td>公式推导</td>
+        <td>AI 生成了边界方程的初始推导</td>
+        <td>逐步验证联立求解过程，确认公式正确性，手动补验证（α=0 特例）</td>
+      </tr>
+      <tr>
+        <td>C++ 编程</td>
+        <td>AI 生成 geometry.h、task1.cpp、task2.cpp 框架</td>
+        <td>修正重叠率输出逻辑（首条无前一条的处理），修正负值显示为"盲区"</td>
+      </tr>
+      <tr>
+        <td>Python 可视化</td>
+        <td>AI 生成 matplotlib 绘图脚本</td>
+        <td>调整图表标签密度（28 条测线标号过密），修正中文字体显示</td>
+      </tr>
+      <tr>
+        <td>报告撰写</td>
+        <td>AI 辅助生成 HTML 报告框架</td>
+        <td>人工审查全部内容，补充误差机理分析和工程后果讨论</td>
+      </tr>
+    </table>
+  </div>
+
+  <h3 class="subsection">6.2 关键纠偏事件</h3>
+  <div class="card">
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="time">事件 1：重叠率输出逻辑</div>
+        <div class="content">
+          <p><strong>AI 初始输出</strong>：第一条测线无前一条时，重叠率显示为"-"或 -1，不够直观。</p>
+          <p><strong>人工纠偏</strong>：修改代码，第一条显示"无（首条）"，真实负重叠率（盲区）标注"(盲区)"，区分"无前一条"和"有前一条但产生盲区"两种情况。</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time">事件 2：平移近似陷阱</div>
+        <div class="content">
+          <p><strong>AI 提示</strong>：代码注释中明确标注"下一条边界绝非前一条的简单平移——必须动态更新水深迭代"。</p>
+          <p><strong>人工反思</strong>：这正是本课题的核心陷阱。若不加思考地使用平移模型，浅水区将产生严重盲区。在报告中增加 5.2 节定量误差分析，用具体数据证明平移模型的危害。</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time">事件 3：二分查找上界设定</div>
+        <div class="content">
+          <p><strong>AI 初始设定</strong>：hi = rightBound(prev_x) + coverWidth(prev_x) + 1000。</p>
+          <p><strong>人工审查</strong>：验证此上界确实使 η < 0（盲区），保证解在 [lo, hi] 区间内。1000m 安全余量确保边界可靠性。</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="time">事件 4：图表可读性</div>
+        <div class="content">
+          <p><strong>AI 初始输出</strong>：task2 总览图标注了所有 28 条测线编号，标签严重重叠。</p>
+          <p><strong>人工纠偏</strong>：修改为每隔 5 条标注一次，提升可读性。同时修正 Unicode 下标字符在 matplotlib 中的显示问题。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="subsection">6.3 使用心得</h3>
+  <div class="card success">
+    <ol style="margin-left:20px; font-size:14px;">
+      <li><strong>AI 是加速器，不是替代品</strong>：AI 能快速生成代码框架和公式推导，但每个关键步骤都需要人工验证。本次项目中，重叠率输出、图表标注等细节均经人工修正。</li>
+      <li><strong>领域知识不可省略</strong>：AI 代码注释中提示"禁止平移近似"，但只有理解了为什么不能平移（水深变化导致覆盖宽度变化），才能在报告中写出有深度的误差分析。</li>
+      <li><strong>迭代式协作最高效</strong>：先让 AI 生成完整框架，再逐段审查修正，比从零手写效率高出数倍。但"逐段审查"环节不可跳过。</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 七、总结 ============ -->
+<section class="section" id="summary">
+  <h2 class="section-title"><span class="num">7</span>总结</h2>
+  <div class="card">
+    <p>本课题建立了多波束测深的完整几何模型，推导了动态水深、波束落点边界、覆盖宽度与重叠率的解析公式，并用 C++ 实现了贪心 + 二分查找的最优测线规划算法。</p>
+    <p><strong>核心结论：</strong></p>
+    <ul style="margin-left:20px; font-size:14px; margin-bottom:14px;">
+      <li>任务 1 证明固定间距无法适应水深变化——浅水区出现盲区（$x \geq 600$m 时重叠率为负）。</li>
+      <li>任务 2 采用贪心策略，每步卡 10% 重叠率下限，得到 <strong>28 条测线、总长 103,712m（56 海里）</strong>的最优方案，所有重叠率精确控制在 10%，全域无死角。</li>
+      <li>误差分析证明：平移近似模型在浅水区会产生高达 376% 的负重叠率（盲区），工程后果严重。</li>
+    </ul>
+    <p>本项目完整代码、数据、可视化及报告均已在项目目录中归档。</p>
+  </div>
+</section>
+
+</div><!-- /.main-inner -->
+</div><!-- /.main -->
+
+<script>
+  // 滚动高亮导航
+  const sections = document.querySelectorAll('.section, .cover');
+  const navLinks = document.querySelectorAll('.nav a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 60) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+
+</body>
+</html>
